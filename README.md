@@ -4,7 +4,13 @@ ScholarGraph is a local-first, multi-agent research workflow. It combines litera
 
 ## Quick start
 
-Use Python with the dependencies in `requirements.txt`.
+### Prerequisites
+
+- Python 3.10 or newer.
+- [Docker Desktop](https://docs.docker.com/desktop/) installed and running for sandboxed experiment execution.
+- [OpenCode](https://opencode.ai/docs/) installed and available on `PATH` to use the engineering arena. With `ENGINEERING_BACKEND=auto` (the default), ScholarGraph falls back to the legacy LLM-based engineering path if OpenCode is unavailable.
+
+Install the Python dependencies and create your local environment file:
 
 ```powershell
 python -m pip install -r requirements.txt
