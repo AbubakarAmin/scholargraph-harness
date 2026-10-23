@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ScholarGraph — Chat</title>
+<link rel="icon" href="/static/img/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/static/img/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/static/img/icon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-touch-icon.png">
+<meta name="theme-color" content="#00111e">
+<link rel="stylesheet" href="/static/fonts/fonts.css">
+<link rel="stylesheet" href="/static/chat/chat.css?v=8">
+</head>
+<body>
+<div class="ambient" aria-hidden="true">
+  <div class="aurora a1"></div>
+  <div class="aurora a2"></div>
+  <div class="mesh"></div>
+  <div class="grain"></div>
+</div>
+
+<a class="skip-link" href="#composer">Skip to composer</a>
+
+<div id="app" class="chat-shell" data-empty="true">
+  <header class="chat-top">
+    <div class="brand-lockup">
+      <img class="brand-mark" src="/static/img/logo.png" alt="ScholarGraph logo" width="38" height="38">
+      <div class="brand-copy">
+        <div class="brand-name">ScholarGraph</div>
+        <div class="brand-sub">research control plane</div>
+      </div>
+    </div>
+
+    <div class="top-status" id="topStatus" role="status" aria-live="polite">
+      <span class="live-dot" id="liveDot" data-state="idle"></span>
+      <span class="status-label" id="statusLabel">Idle</span>
+      <button type="button" class="run-chip" id="focusChip" title="Focused run" hidden>—</button>
+    </div>
+
+    <div class="top-actions">
+      <button type="button" class="ghost" id="themeBtn" title="Toggle light/dark (same as dashboard)">◐ theme</button>
+      <button type="button" class="ghost" id="newChatBtn" title="New chat session">New chat</button>
+      <a class="harness-btn" href="/dashboard" id="dashboardBtn" title="Open the full research harness Control Deck">
+        <span class="harness-ico" aria-hidden="true">⚗</span>
+        <span>Open Harness</span>
+        <kbd>⌘D</kbd>
+      </a>
+    </div>
+  </header>
+
+  <aside class="history-rail" aria-label="Chat history">
+    <div class="history-heading">
+      <div>
+        <span class="eyebrow">Conversations</span>
+        <h2>Your chats</h2>
+      </div>
+      <span class="history-count" id="historyCount">0</span>
+    </div>
+    <nav class="history-list" id="historyList" aria-label="Previous conversations"></nav>
+    <p class="history-empty" id="historyEmpty">Your conversations will appear here.</p>
+  </aside>
+
+  <main class="chat-main" id="chatMain">
+    <!-- Empty / hero state -->
+    <section class="hero" id="hero" aria-label="Welcome">
+      <img class="hero-logo" src="/static/img/logo.png" alt="" width="96" height="96">
+      <p class="hero-brand">ScholarGraph</p>
+      <h1 class="hero-title">Drive the research harness in conversation.</h1>
+      <p class="hero-sub">Start runs, inspect stages, approve releases, upload topic lists — same shared run state as the Control Deck.</p>
+      <div class="hero-prompts" id="heroPrompts">
+        <button type="button" data-prompt="Research robust calibration on machine learning, depth Thorough">Research a topic</button>
+        <button type="button" data-prompt="What's running right now?">What's running?</button>
+        <button type="button" data-prompt="Show me the status of the latest run">Inspect latest run</button>
+        <button type="button" data-prompt="help">What can you do?</button>
+      </div>
+    </section>
+
+    <div class="messages" id="messages" aria-live="polite"></div>
+
+    <div class="thinking" id="thinking" hidden>
+      <div class="thinking-orb"><i></i><i></i><i></i></div>
+      <span id="thinkingText">Working…</span>
+    </div>
+  </main>
+
+  <!-- Persistent vertical pipeline glance -->
+  <section class="stage-rail" id="stageRail" aria-label="Pipeline progress">
+    <div class="pipeline-heading">
+      <div class="stage-rail-meta">
+        <span class="eyebrow">Research workflow</span>
+        <h2>Pipeline</h2>
+      </div>
+      <span class="pipeline-count" id="stageCount">0 / 0</span>
+    </div>
+    <ol class="stages" id="stages"></ol>
+    <div class="agent-now" id="agentNow">
+      <span class="agent-pulse" aria-hidden="true"></span>
+      <div class="agent-copy">
+        <span class="agent-label">Current activity</span>
+        <span id="agentNowText">Standing by</span>
+      </div>
+    </div>
+  </section>
+
+  <footer class="composer-wrap">
+    <div class="active-strip" id="activeStrip" hidden></div>
+    <form class="composer" id="composerForm" autocomplete="off">
+      <input type="file" id="fileInput" multiple accept="image/*,audio/*,video/*,application/pdf,.txt,.md,.csv,.tsv,.json,.jsonl,.yaml,.yml,.xml,.html" hidden>
+      <button type="button" class="icon-btn" id="attachBtn" title="Attach files" aria-label="Attach files">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21.44 11.05l-8.49 8.49a5.5 5.5 0 01-7.78-7.78l8.49-8.49a3.5 3.5 0 014.95 4.95l-8.49 8.49a1.5 1.5 0 01-2.12-2.12l7.78-7.78"/></svg>
+      </button>
+      <textarea id="composer" rows="1" placeholder="Ask ScholarGraph — start a run, inspect a stage, approve a release…" aria-label="Message"></textarea>
+      <button type="submit" class="send-btn" id="sendBtn" title="Send" aria-label="Send">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </button>
+    </form>
+    <div class="attachment-list" id="attachmentList" aria-live="polite" aria-label="Attached files"></div>
+    <p class="composer-hint">Attach files, add a prompt, then send · shared harness state · <a href="/dashboard">Open Harness (Control Deck)</a></p>
+  </footer>
+</div>
+
+<script src="/static/vendor/gsap.min.js"></script>
+<script src="/static/chat/chat.js?v=8"></script>
+</body>
+</html>

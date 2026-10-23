@@ -1,0 +1,167 @@
+# ScholarGraph → Research-Grade Upgrade
+# Copy to .env and fill in the keys you use.
+
+# --- LLM Provider: gemini | openai | openai_compatible ---
+LLM_PROVIDER=gemini
+
+# Gemini (when LLM_PROVIDER=gemini)
+# https://aistudio.google.com/apikey
+GOOGLE_API_KEY=
+# Default hosted Gemma 4 model. It uses the Gemini API and GOOGLE_API_KEY.
+# You can safely replace this with any supported Gemini or Gemma model later.
+GEMINI_MODEL=gemma-4-26b-a4b-it
+# Gemma 4 supports high (maximum reasoning) or minimal (off). Ignored by
+# non-Gemma models, so it does not affect future provider/model changes.
+GEMMA_THINKING_LEVEL=high
+GEMINI_EMBEDDING_MODEL=gemini-embedding-2
+EMBEDDING_DIMENSION=3072
+
+# OpenAI or any OpenAI-compatible endpoint
+# (OpenAI, OpenRouter, Groq, Together, Azure-compatible, local vLLM/Ollama)
+# https://platform.openai.com/api-keys
+OPENAI_API_KEY=
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL=gpt-4o-mini
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+
+# Cost-aware routing (optional overrides)
+# LLM_MODEL_CHEAP=gemini-2.5-flash-lite
+# LLM_MODEL_STRONG=gemini-2.5-pro
+# LLM_MODEL_JUDGE=gemini-2.5-pro
+# LLM_MODEL_FALLBACK=gemini-2.5-flash
+# HTTP timeout per LLM request (s). Raise for slow reasoning endpoints.
+LLM_TIMEOUT_SEC=1800
+# Max output tokens ceiling for truncation-escalation (8192 -> ... -> ceiling).
+# Persona prompts burn budget on reasoning; 65536 avoids finish_reason=length empties.
+LLM_MAX_OUTPUT_TOKENS=65536
+# First-attempt budget for persona gap generation (escalates to ceiling above).
+LLM_PERSONA_MAX_TOKENS=16384
+# Provider-level fallback: when primary provider has connection errors, try the other.
+# Pin both in production — auto-detect is last-resort only (run b099dcaa fell
+# back to a retired default when these were commented out).
+# LLM_FALLBACK_PROVIDER=gemini
+# LLM_FALLBACK_MODEL=gemini-2.5-flash
+# ENSEMBLE_JUDGE_MODELS=gemini-2.5-flash,gemini-2.5-pro
+
+# OpenAlex (required for topic search rate-limit identity)
+OPENALEX_EMAIL=you@example.com
+
+# Optional APIs
+SEMANTIC_SCHOLAR_API_KEY=
+
+# OpenReview (for reviewer-weakness gap signals)
+OPENREVIEW_USERNAME=
+OPENREVIEW_PASSWORD=
+OPENREVIEW_ENABLED=true
+
+# HuggingFace (for dataset access — agents can download datasets from HF Hub)
+# https://huggingface.co/settings/tokens
+HUGGINGFACE_TOKEN=
+HUGGINGFACE_MAX_DOWNLOAD_MB=100
+
+# Source toggles (disable individual sources without touching code)
+ARXIV_ENABLED=true
+OPENALEX_ENABLED=true
+SEMANTIC_SCHOLAR_ENABLED=true
+
+# Sandbox
+SANDBOX_BACKEND=docker
+SANDBOX_TIMEOUT_SEC=600
+
+# Engineering Arena (opencode-backed experiment authoring; Docker execution).
+# ENGINEERING_BACKEND: auto (try opencode, fall back to legacy LLM path) |
+#   opencode (hard-fail if opencode unavailable) | legacy (pre-arena behaviour).
+# The arena uses YOUR opencode auth/session, independent of the gateway keys —
+# that independence is what survives provider 503s (cf. run 211505fb).
+ENGINEERING_BACKEND=auto
+ARENA_DIR=./engineering_arena
+ARENA_SESSION_TIMEOUT_SEC=1800
+ARENA_MAX_ROUNDS=3
+# ARENA_MODEL=anthropic/claude-opus-4-6  (empty = your opencode default)
+# ARENA_AGENT=build
+ARENA_RETENTION_DAYS=7
+ARENA_CLEANUP_STALE=true
+# 211505fb: bounded wait for LLM breaker recovery before legacy codegen burns
+# attempts on empty returns.
+ENGINEER_GATE_WAIT_SEC=120
+
+# Topic hunter seeder (§9)
+SEED_SEQUENTIAL=true
+PERSONA_SEQUENTIAL=true
+PERSONA_COUNT=2
+LLM_BUDGET_PER_SEED=30
+NOVELTY_MAX_ABSTRACTS=40
+LLM_SEED_GENERATION_ENABLED=true
+# Topic hunter v5 full-corpus mining (wider windows cost more LLM calls; owner
+# directive: quality over cost)
+CONTRADICTION_MAX_PAPERS=40
+CONTRADICTION_ABSTRACT_CHARS=1500
+SPARSITY_MAX_PAPERS=60
+SPARSITY_ABSTRACT_CHARS=1200
+MOMENTUM_MINING_ENABLED=true
+CITATION_CONCENTRATION_ENABLED=true
+CONCEPT_GAP_MINING_ENABLED=true
+REVIEWER_CLUSTERING_ENABLED=true
+OPENALEX_NATIVE_COUPLING_ENABLED=true
+HUNTER_FULLTEXT_ENABLED=true
+HUNTER_FULLTEXT_TOP_K=10
+HUNTER_FULLTEXT_MAX_CHARS=6000
+HUNTER_SCORING_ENABLED=true
+HUNTER_SECOND_CHANCE_THRESHOLD=0.55
+HUNTER_SECOND_CHANCE_MAX=2
+HUNTER_PORTFOLIO_ENABLED=true
+
+# System
+RESEARCH_DOMAIN=computer_science
+MAX_ITERATIONS=10
+SUPERVISOR_THRESHOLD=8.5
+DEBATE_PASS_THRESHOLD=7.0
+DEBATE_MIN_ROUNDS=2
+DEBATE_MAX_ROUNDS=5
+NOVELTY_SIMILARITY_REJECT=0.92
+EXPERIMENT_SEEDS=3
+EXPERIMENT_BRANCH_COUNT=3
+ENGINEER_MAX_ATTEMPTS=4
+ENGINEERING_WALL_CLOCK_SEC=7200
+# Multi-type harness (§9 truth; TYPED_GRAPH flipped true per owner directive —
+# owner does not care about run time/cost/tokens; slow LLM provider needs
+# generous caps so a paper always finalises)
+TYPED_GRAPH_ENABLED=true
+PAPER_TYPE_DEFAULT=experimental
+PARALLEL_PHASES_ENABLED=false
+# Budgets (generous per owner directive — backstop only, so a paper finalises)
+RUN_MAX_LLM_CALLS=2000
+RUN_MAX_TOKENS=8000000
+RUN_MAX_USD=500.00
+RUN_WALL_CLOCK_SEC=21600
+# Review sources (M2, §5.1/§9 — default on; all free + license-respecting)
+UNPAYWALL_ENABLED=true
+PMC_ENABLED=true
+DOAJ_GUARD_ENABLED=true
+# Field honesty latch (locked false)
+ALLOW_SYNTHETIC_RESPONDENTS=false
+# Token pricing override (JSON, optional)
+# LLM_PRICE_TABLE_JSON=
+TOPIC_FALLBACK_ENABLED=true
+TOPIC_FALLBACK_MAX_CANDIDATES=2
+# Size for slow reasoning endpoints (~300 s/LLM call): one seed needs 6-10
+# calls, so the seed budget must cover ~20 min. Discovery auto-scales to at
+# least n_seeds * seed_timeout + overhead — these are floors, not ceilings.
+TOPIC_SEED_TIMEOUT_SEC=5400
+TOPIC_DISCOVERY_TIMEOUT_SEC=21600
+DEBUG_MODE=true
+LOG_LEVEL=INFO
+
+# Paths
+VECTOR_DB_PATH=./memory/vector_db
+CROSS_RUN_MEMORY_PATH=./memory/cross_run.jsonl
+RUN_LOG_PATH=./output/run_scratchpad.jsonl
+RUN_EVENTS_PATH=./output/run_events.jsonl
+OUTPUT_DIR=./output
+RAW_RESULTS_DIR=./output/raw_results
+COMPANION_REPO_DIR=./output/companion_repo
+KEYS_STORE_PATH=./memory/keys.json
+
+# Web UI
+WEB_HOST=127.0.0.1
+WEB_PORT=8765

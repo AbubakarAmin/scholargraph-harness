@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ScholarGraph Control Deck</title>
+<link rel="icon" href="/static/img/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/static/img/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/static/img/icon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-touch-icon.png">
+<meta name="theme-color" content="#00111e">
+<link rel="stylesheet" href="/static/fonts/fonts.css">
+<link rel="stylesheet" href="/static/vendor/daisyui.full.min.css">
+<link rel="stylesheet" href="/static/admin/admin.css">
+</head>
+<body x-data="{ launchFocus: false }" x-bind:class="{ 'launch-focus': launchFocus }">
+<div class="ambient" aria-hidden="true"><canvas id="constellation"></canvas><div class="aurora aurora-one"></div><div class="aurora aurora-two"></div><div class="grain"></div></div>
+<a class="skip-link" href="#viewTitle">Skip to content</a>
+<div class="shell">
+  <aside class="rail" aria-label="Primary">
+    <div class="brand">
+      <img class="brand-mark" src="/static/img/logo.png" alt="ScholarGraph logo" width="38" height="38">
+      <div class="brand-text">ScholarGraph<span>research operations</span></div>
+    </div>
+    <div class="rail-label">Workspace</div>
+    <nav class="nav" aria-label="Workspace views">
+      <button class="active" data-view="overview"><span class="nav-ico" aria-hidden="true">◈</span>Overview<span class="kbd">1</span></button>
+      <button data-view="experiments"><span class="nav-ico" aria-hidden="true">⚗</span>Experiments<span class="kbd">2</span></button>
+      <button data-view="evidence"><span class="nav-ico" aria-hidden="true">🔗</span>Evidence<span class="kbd">3</span></button>
+      <button data-view="agents"><span class="nav-ico" aria-hidden="true">👥</span>Agents<span class="kbd">4</span></button>
+      <button data-view="paper"><span class="nav-ico" aria-hidden="true">📄</span>Manuscript<span class="kbd">5</span></button>
+    </nav>
+    <div class="rail-label">System</div>
+    <nav class="nav" aria-label="System views">
+      <button data-view="activity"><span class="nav-ico" aria-hidden="true">📡</span>Activity<span class="kbd">6</span></button>
+      <button data-view="runs"><span class="nav-ico" aria-hidden="true">🕘</span>Run history<span class="kbd">7</span></button>
+      <button data-view="settings"><span class="nav-ico" aria-hidden="true">⚙</span>Settings<span class="kbd">8</span></button>
+    </nav>
+    <div class="rail-foot">
+      <div class="rail-row">
+        <a class="ghost" href="/" title="Chat control plane" style="text-decoration:none;display:inline-flex;align-items:center">💬 Open Chat</a>
+        <button class="ghost" id="darkModeToggle" title="Toggle dark mode (d)">◐ theme</button>
+        <button class="ghost" id="refreshButtonRail" title="Refresh now (r)">↻ refresh</button>
+      </div>
+      <div class="rail-db">Local control plane<br><span id="dbPath">Connecting…</span></div>
+    </div>
+  </aside>
+
+  <main class="main" id="main">
+    <header class="topbar">
+      <div class="title-wrap">
+        <h1 id="viewTitle">Run overview</h1>
+        <p class="crumb" id="crumbLine">No active research run.</p>
+      </div>
+      <div class="run-state" role="status" aria-live="polite">
+        <div class="thinking-orb" id="thinkingOrb" aria-label="AI processing" title="Research intelligence standby"><div id="lottiePulse"></div><span></span></div>
+        <i id="pulse" class="pulse" aria-hidden="true"></i>
+        <span id="runStatus" class="status-pill">Idle</span>
+        <button id="runId" class="run-id" title="Click to copy run id">—</button>
+      </div>
+      <div class="run-controls">
+        <button class="ghost" id="copyRunId" title="Copy run id" style="display:none">copy</button>
+        <button class="primary launch-button" id="startButton" @mouseenter="launchFocus = true" @mouseleave="launchFocus = false" @focus="launchFocus = true" @blur="launchFocus = false"><i data-lucide="sparkles"></i><span>Start a run</span></button>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- OVERVIEW -->
+      <section id="overview" class="view active" aria-label="Run overview">
+        <div class="title-row">
+          <div>
+            <div class="eyebrow">Control room</div>
+            <h2>Research run overview</h2>
+            <p class="sub" id="topicLine">No active research run.</p>
+          </div>
+          <div class="actions">
+            <input id="globalSearch" class="search" type="search" placeholder="Filter topics, experiments, events…  ( / )" aria-label="Filter visible cards">
+            <button id="refreshButton">↻ Refresh</button>
+            <button class="danger" id="resetOutputsButton">Reset outputs</button>
+          </div>
+        </div>
+
+        <div id="onboardingCard" class="onboarding" style="display:none">
+          <div class="onboarding-copy">
+            <h3>Welcome to ScholarGraph</h3>
+            <p>Three steps to your first paper: define a goal, check settings, start the run. The harness hunts topics, debates them, plans, executes, verifies, then writes.</p>
+          </div>
+          <div class="onboarding-steps">
+            <div class="step"><span>1</span>Define your goal</div>
+            <div class="step"><span>2</span>Check settings</div>
+            <div class="step"><span>3</span>Start run</div>
+          </div>
+        </div>
+
+        <div class="kpis">
+          <article class="card kpi"><div class="metric-label">Release readiness</div><div id="readiness" class="metric-value">Pending</div><div class="note" id="readinessNote">Waiting for evidence</div></article>
+          <article class="card kpi"><div class="metric-label">Current phase</div><div id="phaseMetric" class="metric-value">Idle</div><div class="note" id="phaseNote">No run selected</div></article>
+          <article class="card kpi"><div class="metric-label">Blocking findings</div><div id="findingMetric" class="metric-value">0</div><div class="note">Independent verifier</div></article>
+          <article class="card kpi"><div class="metric-label">Spend</div><div id="spendMetric" class="metric-value">$0.00</div><div class="note" id="spendNote">0 calls · 0 tokens</div></article>
+        </div>
+
+        <div class="grid">
+          <article class="card span-12" id="refusalBannerCard" style="display:none">
+            <div class="card-head"><h3>Refusals / downgrades</h3><span class="tag warn">banner</span></div>
+            <div id="refusalBanners"></div>
+          </article>
+
+          <article class="card span-12">
+            <div class="card-head mesh-head"><div><h3>Research mesh</h3><p>Live handoffs across the entire research system</p></div><div class="mesh-status"><i></i><span id="recipeTag">Standing by</span></div></div>
+            <div id="recipeStrip" class="research-mesh" role="region" aria-label="Live research system map"></div>
+            <div id="recipePreview" class="mesh-preview note"></div>
+          </article>
+
+          <article class="card span-6">
+            <div class="card-head"><h3>Funnel</h3><span class="tag" id="funnelTag">topics → paper</span></div>
+            <div id="funnelRows"></div>
+          </article>
+          <article class="card span-6">
+            <div class="card-head"><h3>Spend vs budget</h3><span class="tag" id="spendTag">no budget</span></div>
+            <canvas id="spendChart" height="72" aria-label="Spend over time"></canvas>
+            <div id="spendRows"></div>
+            <div class="note" id="stepCounter"></div>
+          </article>
+
+          <article class="card span-6" id="verifyDetailCard">
+            <div class="card-head"><h3>Verification checklist</h3><span class="tag" id="verifyTag">pending</span></div>
+            <div id="verifyRows"></div>
+          </article>
+          <article class="card span-6" id="gateCard">
+            <div class="card-head"><h3>Release gate</h3><span id="gateTag" class="tag warn">Incomplete</span></div>
+            <div id="gateRows"></div>
+            <div class="actions" style="margin-top:12px">
+              <button class="primary" id="approveBtnGate" style="display:none">Approve for submission (L3)</button>
+              <span class="note" id="gateHint"></span>
+            </div>
+          </article>
+
+          <article class="card span-12" id="finalReviewCard">
+            <div class="card-head"><h3>Final review</h3><span class="tag" id="finalTag">not ready</span></div>
+            <div class="split"><div id="finalLeft"></div><div id="finalRight"></div></div>
+            <div class="actions" style="margin-top:14px">
+              <button class="primary" id="approveBtn">Approve for submission (L3)</button>
+              <input id="rerunNote" type="text" placeholder="Re-run note (feeds cross-run memory)…" style="flex:1;min-width:200px">
+              <button id="rerunNoteBtn">Request re-run with note</button>
+            </div>
+            <p class="note" id="finalNote">Approved output is a submission-candidate pending human review.</p>
+          </article>
+
+          <article class="card span-7">
+            <div class="card-head"><h3>Run metrics</h3><span class="tag live">live</span></div>
+            <div class="cost-tracker">
+              <div class="cost-item"><span class="cost-value" id="costTokens">0</span><span class="cost-label">Tokens</span></div>
+              <div class="cost-item"><span class="cost-value" id="costCalls">0</span><span class="cost-label">LLM calls</span></div>
+              <div class="cost-item"><span class="cost-value" id="costDuration">0m</span><span class="cost-label">Duration</span></div>
+              <div class="cost-item"><span class="cost-value" id="costPhases">0</span><span class="cost-label">Phases done</span></div>
+            </div>
+            <div id="snapshotRows" style="margin-top:12px"></div>
+          </article>
+          <article class="card span-5">
+            <div class="card-head"><h3>Routing</h3><span class="tag" id="routingTag">auto</span></div>
+            <div id="routingRows"></div>
+          </article>
+
+          <article class="card span-12">
+            <div class="card-head"><h3>Discovered topics</h3><span class="tag" id="topicCount">0 topics</span></div>
+            <div id="topicCards" class="topic-cards"></div>
+          </article>
+
+          <article class="card span-7">
+            <div class="card-head"><h3>Latest activity</h3><span class="tag">live feed</span></div>
+            <div id="activity" class="scroll"></div>
+          </article>
+          <article class="card span-5">
+            <div class="card-head"><h3>Pre-flight</h3><span class="tag" id="preflightTag">not checked</span></div>
+            <div id="preflightRows"></div>
+            <p class="note">Pre-flight runs zero LLM spend — no calls are made until you submit.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- EXPERIMENTS -->
+      <section id="experiments" class="view" aria-label="Experiments">
+        <div class="title-row">
+          <div><div class="eyebrow">Execution</div><h2>Experiments</h2>
+          <p class="sub">Planned → executed → analyzed. Every number must trace to a raw artifact.</p></div>
+          <div class="actions"><button id="copyExpSummary">Copy summary</button></div>
+        </div>
+        <div class="grid">
+          <article class="card span-12">
+            <div class="card-head"><h3>Status board</h3><span id="expBoardTag" class="tag">0 listed</span></div>
+            <div id="expBoardHead" class="exp-head"><span>Experiment</span><span>Planned</span><span>Executed</span><span>Analyzed</span><span>Artifact</span></div>
+            <div id="expBoard" class="exp-board"></div>
+          </article>
+          <div id="expDetailGrid" class="span-12 grid" style="padding:0"></div>
+        </div>
+      </section>
+
+      <!-- EVIDENCE -->
+      <section id="evidence" class="view" aria-label="Evidence">
+        <div class="title-row">
+          <div><div class="eyebrow">Provenance</div><h2>Evidence and lineage</h2>
+          <p class="sub">Every conclusion points back to immutable inputs.</p></div>
+        </div>
+        <div class="grid">
+          <article class="card span-12">
+            <div class="card-head"><h3>Evidence tabs</h3><span class="tag">per-type</span></div>
+            <div class="actions" id="evTabs" style="margin-bottom:12px" role="tablist">
+              <button class="primary" data-evtab="experiments" role="tab">Experiments</button>
+              <button data-evtab="corpus" role="tab">Corpus+PRISMA</button>
+              <button data-evtab="response" role="tab">Response</button>
+              <button data-evtab="case" role="tab">Case</button>
+              <button data-evtab="thesis" role="tab">Thesis</button>
+            </div>
+            <div id="evPane-experiments" role="tabpanel"></div>
+            <div id="evPane-corpus" role="tabpanel" style="display:none"></div>
+            <div id="evPane-response" role="tabpanel" style="display:none"></div>
+            <div id="evPane-case" role="tabpanel" style="display:none"></div>
+            <div id="evPane-thesis" role="tabpanel" style="display:none"></div>
+          </article>
+          <article class="card span-8">
+            <div class="card-head"><h3>Claim lineage</h3><span class="tag">run scoped</span></div>
+            <div class="lineage"><b>Hypothesis</b><span>→</span><b>Dataset</b><span>→</span><b>Code</b><span>→</span><b>Execution</b><span>→</span><b>Analysis</b><span>→</span><b>Verification</b></div>
+            <div id="artifactTable" style="margin-top:18px"></div>
+          </article>
+          <article class="card span-4">
+            <div class="card-head"><h3>Verification findings</h3><span id="findingTag" class="tag">0</span></div>
+            <div id="findings"></div>
+          </article>
+          <article class="card span-6">
+            <div class="card-head"><h3>Dataset artifacts</h3><span class="tag">inputs</span></div>
+            <div id="datasetCards"></div>
+          </article>
+          <article class="card span-6">
+            <div class="card-head"><h3>Execution artifacts</h3><span class="tag">outputs</span></div>
+            <div id="execCards"></div>
+          </article>
+          <article class="card span-12">
+            <div class="card-head"><h3>Evidence trace</h3><span class="tag">durable ledger</span></div>
+            <div id="claims"></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- AGENTS -->
+      <section id="agents" class="view" aria-label="Agent registry">
+        <div class="title-row">
+          <div><div class="eyebrow">Permissions</div><h2>Agent registry</h2>
+          <p class="sub">What each role can access and mutate. <span id="agentCount" class="tag">— roles</span></p></div>
+          <div class="actions"><input id="agentSearch" type="search" class="search" placeholder="Filter by name, role, capability…" aria-label="Filter agents"></div>
+        </div>
+        <div id="agentGrid" class="grid agent-grid"></div>
+      </section>
+
+      <!-- PAPER -->
+      <section id="paper" class="view" aria-label="Manuscript">
+        <div class="title-row">
+          <div><div class="eyebrow">Output</div><h2>Manuscript workspace</h2>
+          <p class="sub">Writing is downstream of evidence, not a substitute for it.</p></div>
+          <div class="actions"><button id="copyPaperBtn">Copy manuscript</button></div>
+        </div>
+        <div id="paperScores" class="chips" style="margin-bottom:16px"></div>
+        <div class="paper-toc">
+          <nav class="toc-panel" aria-label="Sections"><div class="toc-title">Sections</div><div id="tocList"></div></nav>
+          <div class="paper-content" id="paperContent"></div>
+        </div>
+      </section>
+
+      <!-- ACTIVITY -->
+      <section id="activity" class="view" aria-label="Activity">
+        <div class="title-row">
+          <div><div class="eyebrow">Telemetry</div><h2>Activity and scratchpad</h2>
+          <p class="sub">Recent events and agent notes for the selected run.</p></div>
+        </div>
+        <div class="grid">
+          <article class="card span-7"><div class="card-head"><h3>Event stream</h3><span class="tag">tail</span></div><div id="eventStream" class="scroll-lg"></div></article>
+          <article class="card span-5"><div class="card-head"><h3>Scratchpad</h3><span class="tag">notes</span></div><div id="scratchpad" class="scroll-lg mono"></div></article>
+          <article class="card span-6"><div class="card-head"><h3>Cross-run lessons</h3><span class="tag">memory</span></div><div id="crossRun"></div></article>
+          <article class="card span-6"><div class="card-head"><h3>Debate / supervisor</h3><span class="tag">signals</span></div><div id="debateSnap"></div></article>
+        </div>
+      </section>
+
+      <!-- RUNS -->
+      <section id="runs" class="view" aria-label="Run history">
+        <div class="title-row">
+          <div><div class="eyebrow">History</div><h2>Run history</h2>
+          <p class="sub">Durable runs stored in the research ledger.</p></div>
+        </div>
+        <div class="run-search">
+          <input id="runSearchInput" type="text" placeholder="Search runs by ID, mode, or status…">
+          <div class="run-filters">
+            <button class="run-filter-btn active" data-filter="all">All</button>
+            <button class="run-filter-btn" data-filter="full_research">Research</button>
+          </div>
+        </div>
+        <article class="card"><div id="runTable"></div></article>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="settings" class="view" aria-label="Settings">
+        <div class="title-row">
+          <div><div class="eyebrow">Runtime</div><h2>System settings</h2>
+          <p class="sub">All runtime fields are editable. Saving updates the live process, local keys store, and project .env.</p></div>
+        </div>
+        <div class="preset-bar">
+          <span class="note">Presets:</span>
+          <div id="presetList"></div>
+          <div class="preset-save">
+            <input id="presetNameInput" type="text" placeholder="Preset name…">
+            <button class="ghost" id="savePresetBtn">Save current</button>
+          </div>
+        </div>
+        <div id="settingsTabs" class="actions" style="margin-bottom:16px"></div>
+        <article class="card">
+          <div id="settingsForm" class="form-grid"></div>
+          <div class="actions" style="margin-top:18px">
+            <button class="primary" id="saveSettings">Save settings</button>
+            <button id="testProvider">Test provider</button>
+            <span id="providerStatus" class="tag">Not tested</span>
+          </div>
+          <p class="note" id="settingsNote"></p>
+        </article>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div id="intentModal" class="confirm-overlay" role="dialog" aria-modal="true" aria-label="Start research run">
+  <div class="confirm-dialog intent-dialog">
+    <h3 class="confirm-title">Start research run</h3>
+    <div class="form-grid intent-grid">
+      <div style="grid-column:span 2"><label for="intentGoal">Research goal (optional — blank = fully autonomous)</label><textarea id="intentGoal" rows="3" style="width:100%" placeholder="Optional: describe the paper you want. Blank = ScholarGraph picks topics autonomously."></textarea></div>
+      <div><label for="intentDomain">Domain (blank = .env default, editable per run)</label><input id="intentDomain" type="text" placeholder="loads from .env RESEARCH_DOMAIN"></div>
+      <div><label for="intentPaperType">Paper type</label><select id="intentPaperType"><option value="auto">auto (recommended)</option><option value="experimental">experimental</option><option value="comparative">comparative</option><option value="empirical">empirical</option><option value="review">review</option><option value="analytical">analytical</option><option value="descriptive">descriptive</option><option value="argumentative">argumentative</option><option value="cause_effect">cause_effect</option><option value="case_study">case_study</option><option value="survey">survey</option></select></div>
+      <div><label for="intentHuntMode">Discovery mode</label><select id="intentHuntMode"><option value="try_and_report">try_and_report (recommended)</option><option value="gap">gap</option><option value="replication">replication</option></select></div>
+      <div><label for="intentDepth">Depth</label><select id="intentDepth"><option value="Quick">Quick</option><option value="Standard" selected>Standard</option><option value="Thorough">Thorough</option></select></div>
+      <div><label for="intentPackId">Pack id (upload below first)</label><input id="intentPackId" type="text" placeholder="optional pack_id"></div>
+      <div><label for="intentBudgetUsd">Budget USD</label><input id="intentBudgetUsd" type="number" min="0" step="1"></div>
+      <div><label for="intentBudgetMin">Budget minutes</label><input id="intentBudgetMin" type="number" min="0" step="1"></div>
+      <div><label for="packResponseTable">response_table (csv/json, ≤50MB)</label><input id="packResponseTable" type="file" accept=".csv,.json"></div>
+      <div><label for="packCodebook">codebook (csv)</label><input id="packCodebook" type="file" accept=".csv"></div>
+      <div><label for="packCasePack">case_pack (zip, ≤200MB)</label><input id="packCasePack" type="file" accept=".zip"></div>
+      <div><label for="packCorpusOverride">corpus_override (json)</label><input id="packCorpusOverride" type="file" accept=".json"></div>
+    </div>
+    <div class="actions" style="margin-top:10px">
+      <button id="packUploadBtn">Upload packs</button>
+      <span class="note" id="packStatus">No pack uploaded.</span>
+    </div>
+    <div id="intentError" class="finding" style="display:none;margin-top:10px"></div>
+    <div class="confirm-actions" style="margin-top:14px">
+      <button id="intentCancel">Cancel</button>
+      <button class="primary" id="intentSubmit">Start run</button>
+    </div>
+    <div class="actions" style="margin-top:12px">
+      <input id="resumeRunId" type="text" placeholder="run id for resume / re-run" style="flex:1;min-width:160px">
+      <button id="trueResumeBtn">True Resume</button>
+      <button id="rerunBtn">Re-run from scratch</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="confirmOverlay" class="confirm-overlay" role="dialog" aria-modal="true">
+  <div class="confirm-dialog">
+    <h3 id="confirmTitle" class="confirm-title">Confirm action</h3>
+    <p id="confirmMessage" class="confirm-message">Are you sure?</p>
+    <div class="confirm-actions">
+      <button id="confirmCancel">Cancel</button>
+      <button class="primary" id="confirmOk">Confirm</button>
+    </div>
+  </div>
+</div>
+<div class="keyboard-hint" id="kbdHint">keys: 1–8 views · / filter · r refresh · d theme</div>
+<script src="/static/vendor/alpine.min.js" defer></script>
+<script src="/static/vendor/gsap.min.js"></script>
+<script src="/static/vendor/lottie.min.js"></script>
+<script src="/static/vendor/lucide.min.js"></script>
+<script src="/static/admin/admin.js"></script>
+<script type="module" src="/static/admin/experience.js"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+# Templates module for LaTeX and other document templates 

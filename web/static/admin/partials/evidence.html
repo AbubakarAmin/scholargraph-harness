@@ -1,0 +1,47 @@
+<section class="view" id="evidence">
+  <div class="title-row">
+    <div>
+      <div class="eyebrow">Provenance</div>
+      <h2>Evidence and lineage</h2>
+      <p class="sub">Every conclusion should point back to immutable inputs.</p>
+    </div>
+  </div>
+  <div class="grid">
+    <article class="card span-12">
+      <div class="card-head"><h3>Evidence tabs</h3><span class="tag">per-type</span></div>
+      <div class="actions" id="evTabs" style="margin-bottom:12px">
+        <button class="primary" data-evtab="experiments">Experiments</button>
+        <button data-evtab="corpus">Corpus+PRISMA</button>
+        <button data-evtab="response">Response</button>
+        <button data-evtab="case">Case</button>
+        <button data-evtab="thesis">Thesis</button>
+      </div>
+      <div id="evPane-experiments"></div>
+      <div id="evPane-corpus" style="display:none"></div>
+      <div id="evPane-response" style="display:none"></div>
+      <div id="evPane-case" style="display:none"></div>
+      <div id="evPane-thesis" style="display:none"></div>
+    </article>
+    <article class="card span-8">
+      <div class="card-head"><h3>Claim lineage</h3><span class="tag">run scoped</span></div>
+      <div class="lineage"><b>Hypothesis</b><span>-></span><b>Dataset</b><span>-></span><b>Code</b><span>-></span><b>Execution</b><span>-></span><b>Analysis</b><span>-></span><b>Verification</b></div>
+      <div id="artifactTable" style="margin-top:18px"></div>
+    </article>
+    <article class="card span-4">
+      <div class="card-head"><h3>Verification findings</h3><span id="findingTag" class="tag">0</span></div>
+      <div id="findings"></div>
+    </article>
+    <article class="card span-6">
+      <div class="card-head"><h3>Dataset artifacts</h3><span class="tag">inputs</span></div>
+      <div id="datasetCards"></div>
+    </article>
+    <article class="card span-6">
+      <div class="card-head"><h3>Execution artifacts</h3><span class="tag">outputs</span></div>
+      <div id="execCards"></div>
+    </article>
+    <article class="card span-12">
+      <div class="card-head"><h3>Evidence trace</h3><span class="tag">durable ledger</span></div>
+      <div id="claims"></div>
+    </article>
+  </div>
+</section>

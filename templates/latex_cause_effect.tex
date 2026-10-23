@@ -1,0 +1,27 @@
+% ScholarGraph skeleton — cause-effect paper (proposal §7.4, M4).
+% Token contract with EditorAgent._generate_latex_document:
+%   %TITLE% %ABSTRACT% %SECTIONS% %BIBLIOGRAPHY%
+% Manuscript order (§3.4): Intro → Related → Methods → Experiments → Results → Discussion → Limitations → Conclusion.
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx,hyperref,geometry,natbib,booktabs}
+\geometry{margin=1in}
+\title{%TITLE%}
+\author{ScholarGraph Research System}
+\date{\today}
+\begin{document}
+\maketitle
+\begin{abstract}
+%ABSTRACT%
+\end{abstract}
+
+% Cause-effect pack (§7.3): Methods states the DAG (treatment, outcome,
+% adjustment set) plus the identification strategy; Discussion carries the
+% sensitivity note and the placebo result (or its not_feasible limitation).
+% Causal verbs are allowed ONLY at verb_level causal.
+%SECTIONS%
+
+%BIBLIOGRAPHY%
+\end{document}

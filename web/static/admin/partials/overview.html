@@ -1,0 +1,78 @@
+<section class="view active" id="overview">
+  <div class="title-row">
+    <div>
+      <div class="eyebrow">Control room</div>
+      <h2>Research run overview</h2>
+      <p class="sub" id="topicLine">No active research run.</p>
+    </div>
+    <div class="actions">
+      <button id="refreshButton">Refresh</button>
+      <button class="danger" id="resetOutputsButton">Reset outputs</button>
+      <button class="danger" id="resetCatalogButton">Reset dataset catalog</button>
+    </div>
+  </div>
+  <div class="grid">
+    <article class="card span-3"><div class="metric-label">Release readiness</div><div id="readiness" class="metric-value">Pending</div><div class="note" id="readinessNote">Waiting for evidence</div></article>
+    <article class="card span-3"><div class="metric-label">Current phase</div><div id="phaseMetric" class="metric-value">Idle</div><div class="note" id="phaseNote">No run selected</div></article>
+    <article class="card span-3"><div class="metric-label">Experiments</div><div id="experimentMetric" class="metric-value">0 / 0</div><div class="note" id="experimentNote">None planned</div></article>
+    <article class="card span-3"><div class="metric-label">Blocking findings</div><div id="findingMetric" class="metric-value">0</div><div class="note">Independent verifier</div></article>
+    <article class="card span-12" id="refusalBannerCard" style="display:none">
+      <div class="card-head"><h3>Refusals / downgrades</h3><span class="tag warn">banner</span></div>
+      <div id="refusalBanners"></div>
+    </article>
+    <article class="card span-12" id="preflightCard">
+      <div class="card-head"><h3>Pre-flight</h3><span class="tag" id="preflightTag">not checked</span></div>
+      <div id="preflightRows"></div>
+      <p class="note" id="preflightNote">Pre-flight runs zero LLM spend — no calls are made until you submit.</p>
+    </article>
+    <article class="card span-12" id="recipeCard">
+      <div class="card-head"><h3>Pipeline recipe</h3><span class="tag" id="recipeTag">sequential-with-skip</span></div>
+      <div id="recipeStrip" class="pipeline-timeline"></div>
+      <div id="recipePreview"></div>
+      <p class="note">Sequential execution with skip — phases run in recipe order; every skipped phase carries a reason.</p>
+    </article>
+    <article class="card span-6" id="spendCard">
+      <div class="card-head"><h3>Spend vs budget</h3><span class="tag" id="spendTag">no budget</span></div>
+      <div id="spendRows"></div>
+      <div class="note" id="stepCounter"></div>
+    </article>
+    <article class="card span-6" id="verifyDetailCard">
+      <div class="card-head"><h3>Verification checklist</h3><span class="tag" id="verifyTag">pending</span></div>
+      <div id="verifyRows"></div>
+    </article>
+    <article class="card span-12" id="finalReviewCard">
+      <div class="card-head"><h3>Final review</h3><span class="tag" id="finalTag">not ready</span></div>
+      <div class="split">
+        <div id="finalLeft"></div>
+        <div id="finalRight"></div>
+      </div>
+      <div class="actions" style="margin-top:14px">
+        <button class="primary" id="approveBtn">Approve for submission (L3)</button>
+        <input id="rerunNote" type="text" placeholder="Re-run note (feeds cross-run memory)..." style="flex:1;min-width:200px">
+        <button id="rerunNoteBtn">Request re-run with note</button>
+      </div>
+      <p class="note" id="finalNote">Approved output is a submission-candidate pending approval until human review completes.</p>
+    </article>
+    <article class="card span-12">
+      <div class="card-head"><h3>Pipeline state</h3><span id="phaseTag" class="tag">idle</span></div>
+      <div id="phaseList" class="phase-list"></div>
+    </article>
+    <article class="card span-7">
+      <div class="card-head"><h3>Release gate</h3><span id="gateTag" class="tag warn">Incomplete</span></div>
+      <div id="gateRows"></div>
+    </article>
+    <article class="card span-5">
+      <div class="card-head"><h3>Experiment progress</h3><span class="tag">planned → ran</span></div>
+      <div id="expProgress" class="progress"></div>
+      <div id="expOverviewList" style="margin-top:14px"></div>
+    </article>
+    <article class="card span-7">
+      <div class="card-head"><h3>Latest activity</h3><span class="tag">live feed</span></div>
+      <div id="activity" class="scroll"></div>
+    </article>
+    <article class="card span-5">
+      <div class="card-head"><h3>Run snapshot</h3><span class="tag">signals</span></div>
+      <div id="snapshotRows"></div>
+    </article>
+  </div>
+</section>
