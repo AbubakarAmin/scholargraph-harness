@@ -61,28 +61,89 @@ the current settings.
 The CLI and web interface use the same research pipeline. The selected paper
 type determines which phases run; not every project requires an experiment.
 
-```text
-Research request
-      │
-      ▼
-Intake and recipe selection
-      │
-      ▼
-Literature discovery ──► debate and planning (when applicable)
-      │
-      ▼
-Data validation / analysis / experiment (recipe-dependent)
-      │
-      ▼
-Independent checks ──► supervision and editing
-      │
-      ▼
-Paper and research artifacts
+```mermaid
+flowchart TB
+  subgraph entry["Entry points"]
+    CLI["CLI<br/>main.py"]
+    UI["Web UI<br/>run_ui.py → web/app.py"]
+  end
+
+  CLI --> PIPELINE["Shared runner<br/>core/pipeline.py · ResearchPipeline"]
+  UI --> PIPELINE
+
+  PIPELINE --> REGISTRY["Paper type and recipe<br/>core/phase_registry.py"]
+  REGISTRY --> GRAPH["Recipe-aware LangGraph<br/>core/workflow.py"]
+  GRAPH --> NODES["Phase nodes and routing<br/>core/workflow_nodes.py"]
+  GRAPH <--> STATE["Shared run state<br/>core/state.py · ResearchState"]
+
+  subgraph phases["Typical experimental recipe (other recipes add, omit, or replace phases)"]
+    INTAKE["Intake"]
+    DISCOVERY["Topic and literature discovery"]
+    DEBATE["Hypothesis debate"]
+    PLANNING["Planning"]
+    DATA["Data validation"]
+    WRITING["Narrative writing"]
+    ENGINEERING["Experiment engineering"]
+    VALIDATION["Independent validation<br/>execution · analysis · verification"]
+    RESULTS["Results writing"]
+    REVIEW["Supervision"]
+    EDITING["Editing"]
+    INTAKE --> DISCOVERY --> DEBATE --> PLANNING --> DATA --> WRITING --> ENGINEERING --> VALIDATION --> RESULTS --> REVIEW --> EDITING
+  end
+  NODES --> INTAKE
+  EDITING --> OUTPUTS["Manuscripts and run artifacts<br/>output/"]
+  NODES -. "invoke specialist roles" .-> AGENTS["Research agents<br/>agents/"]
+
+  subgraph services["Shared services"]
+    GATEWAY["API gateway<br/>core/api_gateway.py"]
+    EVIDENCE["Contracts and evidence gate<br/>core/contracts.py · core/evidence_gate.py"]
+    SANDBOX["Sandbox dispatch<br/>core/sandbox_dispatch.py"]
+    VERIFY["Verification and review<br/>core/verification.py"]
+    CONTEXT["Run context<br/>core/context.py"]
+  end
+  AGENTS --> GATEWAY
+  AGENTS --> EVIDENCE
+  AGENTS --> VERIFY
+  AGENTS --> CONTEXT
+  ENGINEERING --> ARENA["Engineering arena<br/>core/engineering_arena.py"]
+  ARENA --> CODEGEN["OpenCode<br/>code authoring (optional)"]
+  CODEGEN -. "returns experiment code" .-> ARENA
+  ARENA --> EVIDENCE
+  EVIDENCE --> SANDBOX
+  SANDBOX --> DOCKER["Docker execution<br/>or configured legacy backend"]
+  DOCKER --> VALIDATION
+
+  subgraph providers["External providers and sources"]
+    LLM["LLM and embedding providers<br/>Gemini · OpenAI-compatible"]
+    SOURCES["Research sources<br/>arXiv · OpenAlex · Semantic Scholar<br/>OpenReview · Crossref · open access"]
+    DATASETS["Dataset source<br/>Hugging Face Hub"]
+  end
+  GATEWAY --> LLM
+  GATEWAY --> SOURCES
+  AGENTS --> DATASETS
+  DATASETS --> DATA
+
+  subgraph persistence["Run records and recovery"]
+    CHECKPOINTS["Graph checkpoints"]
+    LEDGER["Research ledger and database"]
+    LOGS["Run events and logs"]
+    MEMORY["Reusable local memory"]
+  end
+  PIPELINE --> CHECKPOINTS
+  STATE --> LEDGER
+  PIPELINE --> LOGS
+  AGENTS --> MEMORY
 ```
 
-The system is designed to make sources, decisions, results, and limitations
-inspectable. Passing a workflow check does not prove that a finding is correct,
-novel, generalizable, or ready for publication.
+Paper-type recipes select the phases and routing at runtime; the experimental
+path above is illustrative, not mandatory for every project. Review, survey,
+case-study, causal, and other recipes can use different specialist phases.
+Checkpoints support run recovery, while the ledger, logs, memory, and generated
+files preserve run evidence and outputs. The system is designed to make sources,
+decisions, results, and limitations inspectable. Passing a workflow check does
+not prove that a finding is correct, novel, generalizable, or ready for
+publication. See [Architecture](docs/architecture.md) and
+[Workflow and paper types](docs/workflow.md) for implementation details.
 
 ## What it provides
 
