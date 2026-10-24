@@ -31,6 +31,17 @@ being developed.
 [Paper types](#paper-types) · [Integrations](#integrations) ·
 [Documentation](#documentation)
 
+## Why open models?
+
+We chose [Gemma 4](https://ai.google.dev/gemma/docs) for this hackathon because
+open models make powerful AI more adaptable and give researchers more control
+over where their ideas are processed. In ScholarGraph, Gemma can help turn an
+early hunch into a testable research question—from new ideas to the famous
+Navier–Stokes existence-and-smoothness problem. The goal is to support rigorous
+research, not claim to solve it. A compatible local setup can keep chat prompts
+on infrastructure you control; configured embeddings and literature searches
+may still use external services.
+
 ## Integrations
 
 ScholarGraph connects to external services for language-model calls, research
